@@ -15,11 +15,21 @@ function Equipe() {
     queryKey: ["equipe", emp.data?.id],
     enabled: !!emp.data?.id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data: members } = await supabase
         .from("company_members")
-        .select("user_id, profiles(nome, email, avatar_url), user_roles(role)")
+        .select("user_id")
         .eq("empresa_id", emp.data!.id);
-      return data ?? [];
+      const ids = (members ?? []).map((m) => m.user_id);
+      if (ids.length === 0) return [];
+      const [{ data: profiles }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("id, nome, email").in("id", ids),
+        supabase.from("user_roles").select("user_id, role").eq("empresa_id", emp.data!.id),
+      ]);
+      return ids.map((id) => ({
+        user_id: id,
+        profile: profiles?.find((p) => p.id === id),
+        roles: (roles ?? []).filter((r) => r.user_id === id).map((r) => r.role),
+      }));
     },
   });
 
@@ -36,12 +46,12 @@ function Equipe() {
               <tr><th className="px-4 py-3">Nome</th><th>E-mail</th><th>Papéis</th></tr>
             </thead>
             <tbody>
-              {(data ?? []).map((m: { user_id: string; profiles: { nome?: string; email?: string } | null; user_roles: Array<{ role: string }> | null }) => (
+              {(data ?? []).map((m) => (
                 <tr key={m.user_id} className="border-t border-border">
-                  <td className="px-4 py-3 font-medium">{m.profiles?.nome ?? "—"}</td>
-                  <td>{m.profiles?.email ?? "—"}</td>
+                  <td className="px-4 py-3 font-medium">{m.profile?.nome ?? "—"}</td>
+                  <td>{m.profile?.email ?? "—"}</td>
                   <td className="flex flex-wrap gap-1 py-3">
-                    {(m.user_roles ?? []).map((r, i) => <Badge key={i} variant="secondary">{r.role}</Badge>)}
+                    {m.roles.map((r, i) => <Badge key={i} variant="secondary">{r}</Badge>)}
                   </td>
                 </tr>
               ))}
@@ -49,7 +59,7 @@ function Equipe() {
           </table>
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">Convidar novos membros estará disponível em breve. Por enquanto, peça à pessoa para se cadastrar; quando você fizer o primeiro convite, ela será vinculada a esta empresa.</p>
+      <p className="text-xs text-muted-foreground">Convidar novos membros estará disponível em breve.</p>
     </div>
   );
 }

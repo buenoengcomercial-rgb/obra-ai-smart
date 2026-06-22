@@ -142,7 +142,10 @@ function Conferencia() {
       }
 
       // Atualiza header
-      const update: Record<string, unknown> = {
+      if (novoStatus === "aprovada" && !header.obra_id) {
+        throw new Error("Selecione a obra antes de aprovar.");
+      }
+      const update = {
         fornecedor_nome: header.fornecedor_nome || null,
         fornecedor_cnpj: header.fornecedor_cnpj || null,
         numero: header.numero || null,
@@ -152,16 +155,11 @@ function Conferencia() {
         desconto: Number(header.desconto || 0),
         obra_id: header.obra_id || null,
         observacao: header.observacao || null,
+        ...(novoStatus === "aprovada"
+          ? { status: "aprovada" as const, aprovada_por: u.user?.id ?? null, aprovada_em: new Date().toISOString() }
+          : {}),
+        ...(novoStatus === "rejeitada" ? { status: "rejeitada" as const } : {}),
       };
-      if (novoStatus === "aprovada") {
-        if (!header.obra_id) throw new Error("Selecione a obra antes de aprovar.");
-        update.status = "aprovada";
-        update.aprovada_por = u.user?.id;
-        update.aprovada_em = new Date().toISOString();
-      }
-      if (novoStatus === "rejeitada") {
-        update.status = "rejeitada";
-      }
       const { error: hErr } = await supabase.from("notas_fiscais").update(update).eq("id", id);
       if (hErr) throw hErr;
 
