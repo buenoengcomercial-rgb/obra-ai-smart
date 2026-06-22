@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /dashboard
+Disallow: /obras
+Disallow: /notas
+Disallow: /fornecedores
+Disallow: /categorias
+Disallow: /configuracoes
+Disallow: /api/
+Allow: /

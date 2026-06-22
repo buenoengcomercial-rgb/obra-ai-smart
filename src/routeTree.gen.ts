@@ -9,38 +9,213 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedObrasRouteImport } from './routes/_authenticated/obras'
+import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
+import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
+import { Route as AuthenticatedObrasNovaRouteImport } from './routes/_authenticated/obras.nova'
+import { Route as AuthenticatedObrasIdRouteImport } from './routes/_authenticated/obras.$id'
+import { Route as AuthenticatedNotasUploadRouteImport } from './routes/_authenticated/notas.upload'
+import { Route as AuthenticatedNotasIdRouteImport } from './routes/_authenticated/notas.$id'
+import { Route as AuthenticatedConfiguracoesWhatsappRouteImport } from './routes/_authenticated/configuracoes.whatsapp'
+import { Route as AuthenticatedConfiguracoesEquipeRouteImport } from './routes/_authenticated/configuracoes.equipe'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedObrasRoute = AuthenticatedObrasRouteImport.update({
+  id: '/obras',
+  path: '/obras',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFornecedoresRoute =
+  AuthenticatedFornecedoresRouteImport.update({
+    id: '/fornecedores',
+    path: '/fornecedores',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCategoriasRoute = AuthenticatedCategoriasRouteImport.update({
+  id: '/categorias',
+  path: '/categorias',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedObrasNovaRoute = AuthenticatedObrasNovaRouteImport.update({
+  id: '/nova',
+  path: '/nova',
+  getParentRoute: () => AuthenticatedObrasRoute,
+} as any)
+const AuthenticatedObrasIdRoute = AuthenticatedObrasIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedObrasRoute,
+} as any)
+const AuthenticatedNotasUploadRoute =
+  AuthenticatedNotasUploadRouteImport.update({
+    id: '/upload',
+    path: '/upload',
+    getParentRoute: () => AuthenticatedNotasRoute,
+  } as any)
+const AuthenticatedNotasIdRoute = AuthenticatedNotasIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedNotasRoute,
+} as any)
+const AuthenticatedConfiguracoesWhatsappRoute =
+  AuthenticatedConfiguracoesWhatsappRouteImport.update({
+    id: '/configuracoes/whatsapp',
+    path: '/configuracoes/whatsapp',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedConfiguracoesEquipeRoute =
+  AuthenticatedConfiguracoesEquipeRouteImport.update({
+    id: '/configuracoes/equipe',
+    path: '/configuracoes/equipe',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/categorias': typeof AuthenticatedCategoriasRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/notas': typeof AuthenticatedNotasRouteWithChildren
+  '/obras': typeof AuthenticatedObrasRouteWithChildren
+  '/configuracoes/equipe': typeof AuthenticatedConfiguracoesEquipeRoute
+  '/configuracoes/whatsapp': typeof AuthenticatedConfiguracoesWhatsappRoute
+  '/notas/$id': typeof AuthenticatedNotasIdRoute
+  '/notas/upload': typeof AuthenticatedNotasUploadRoute
+  '/obras/$id': typeof AuthenticatedObrasIdRoute
+  '/obras/nova': typeof AuthenticatedObrasNovaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/categorias': typeof AuthenticatedCategoriasRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/notas': typeof AuthenticatedNotasRouteWithChildren
+  '/obras': typeof AuthenticatedObrasRouteWithChildren
+  '/configuracoes/equipe': typeof AuthenticatedConfiguracoesEquipeRoute
+  '/configuracoes/whatsapp': typeof AuthenticatedConfiguracoesWhatsappRoute
+  '/notas/$id': typeof AuthenticatedNotasIdRoute
+  '/notas/upload': typeof AuthenticatedNotasUploadRoute
+  '/obras/$id': typeof AuthenticatedObrasIdRoute
+  '/obras/nova': typeof AuthenticatedObrasNovaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/categorias': typeof AuthenticatedCategoriasRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fornecedores': typeof AuthenticatedFornecedoresRoute
+  '/_authenticated/notas': typeof AuthenticatedNotasRouteWithChildren
+  '/_authenticated/obras': typeof AuthenticatedObrasRouteWithChildren
+  '/_authenticated/configuracoes/equipe': typeof AuthenticatedConfiguracoesEquipeRoute
+  '/_authenticated/configuracoes/whatsapp': typeof AuthenticatedConfiguracoesWhatsappRoute
+  '/_authenticated/notas/$id': typeof AuthenticatedNotasIdRoute
+  '/_authenticated/notas/upload': typeof AuthenticatedNotasUploadRoute
+  '/_authenticated/obras/$id': typeof AuthenticatedObrasIdRoute
+  '/_authenticated/obras/nova': typeof AuthenticatedObrasNovaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/categorias'
+    | '/dashboard'
+    | '/fornecedores'
+    | '/notas'
+    | '/obras'
+    | '/configuracoes/equipe'
+    | '/configuracoes/whatsapp'
+    | '/notas/$id'
+    | '/notas/upload'
+    | '/obras/$id'
+    | '/obras/nova'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/categorias'
+    | '/dashboard'
+    | '/fornecedores'
+    | '/notas'
+    | '/obras'
+    | '/configuracoes/equipe'
+    | '/configuracoes/whatsapp'
+    | '/notas/$id'
+    | '/notas/upload'
+    | '/obras/$id'
+    | '/obras/nova'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/categorias'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/fornecedores'
+    | '/_authenticated/notas'
+    | '/_authenticated/obras'
+    | '/_authenticated/configuracoes/equipe'
+    | '/_authenticated/configuracoes/whatsapp'
+    | '/_authenticated/notas/$id'
+    | '/_authenticated/notas/upload'
+    | '/_authenticated/obras/$id'
+    | '/_authenticated/obras/nova'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +223,141 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/obras': {
+      id: '/_authenticated/obras'
+      path: '/obras'
+      fullPath: '/obras'
+      preLoaderRoute: typeof AuthenticatedObrasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/notas': {
+      id: '/_authenticated/notas'
+      path: '/notas'
+      fullPath: '/notas'
+      preLoaderRoute: typeof AuthenticatedNotasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/fornecedores': {
+      id: '/_authenticated/fornecedores'
+      path: '/fornecedores'
+      fullPath: '/fornecedores'
+      preLoaderRoute: typeof AuthenticatedFornecedoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/categorias': {
+      id: '/_authenticated/categorias'
+      path: '/categorias'
+      fullPath: '/categorias'
+      preLoaderRoute: typeof AuthenticatedCategoriasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/obras/nova': {
+      id: '/_authenticated/obras/nova'
+      path: '/nova'
+      fullPath: '/obras/nova'
+      preLoaderRoute: typeof AuthenticatedObrasNovaRouteImport
+      parentRoute: typeof AuthenticatedObrasRoute
+    }
+    '/_authenticated/obras/$id': {
+      id: '/_authenticated/obras/$id'
+      path: '/$id'
+      fullPath: '/obras/$id'
+      preLoaderRoute: typeof AuthenticatedObrasIdRouteImport
+      parentRoute: typeof AuthenticatedObrasRoute
+    }
+    '/_authenticated/notas/upload': {
+      id: '/_authenticated/notas/upload'
+      path: '/upload'
+      fullPath: '/notas/upload'
+      preLoaderRoute: typeof AuthenticatedNotasUploadRouteImport
+      parentRoute: typeof AuthenticatedNotasRoute
+    }
+    '/_authenticated/notas/$id': {
+      id: '/_authenticated/notas/$id'
+      path: '/$id'
+      fullPath: '/notas/$id'
+      preLoaderRoute: typeof AuthenticatedNotasIdRouteImport
+      parentRoute: typeof AuthenticatedNotasRoute
+    }
+    '/_authenticated/configuracoes/whatsapp': {
+      id: '/_authenticated/configuracoes/whatsapp'
+      path: '/configuracoes/whatsapp'
+      fullPath: '/configuracoes/whatsapp'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesWhatsappRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/configuracoes/equipe': {
+      id: '/_authenticated/configuracoes/equipe'
+      path: '/configuracoes/equipe'
+      fullPath: '/configuracoes/equipe'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesEquipeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedNotasRouteChildren {
+  AuthenticatedNotasIdRoute: typeof AuthenticatedNotasIdRoute
+  AuthenticatedNotasUploadRoute: typeof AuthenticatedNotasUploadRoute
+}
+
+const AuthenticatedNotasRouteChildren: AuthenticatedNotasRouteChildren = {
+  AuthenticatedNotasIdRoute: AuthenticatedNotasIdRoute,
+  AuthenticatedNotasUploadRoute: AuthenticatedNotasUploadRoute,
+}
+
+const AuthenticatedNotasRouteWithChildren =
+  AuthenticatedNotasRoute._addFileChildren(AuthenticatedNotasRouteChildren)
+
+interface AuthenticatedObrasRouteChildren {
+  AuthenticatedObrasIdRoute: typeof AuthenticatedObrasIdRoute
+  AuthenticatedObrasNovaRoute: typeof AuthenticatedObrasNovaRoute
+}
+
+const AuthenticatedObrasRouteChildren: AuthenticatedObrasRouteChildren = {
+  AuthenticatedObrasIdRoute: AuthenticatedObrasIdRoute,
+  AuthenticatedObrasNovaRoute: AuthenticatedObrasNovaRoute,
+}
+
+const AuthenticatedObrasRouteWithChildren =
+  AuthenticatedObrasRoute._addFileChildren(AuthenticatedObrasRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCategoriasRoute: typeof AuthenticatedCategoriasRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFornecedoresRoute: typeof AuthenticatedFornecedoresRoute
+  AuthenticatedNotasRoute: typeof AuthenticatedNotasRouteWithChildren
+  AuthenticatedObrasRoute: typeof AuthenticatedObrasRouteWithChildren
+  AuthenticatedConfiguracoesEquipeRoute: typeof AuthenticatedConfiguracoesEquipeRoute
+  AuthenticatedConfiguracoesWhatsappRoute: typeof AuthenticatedConfiguracoesWhatsappRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCategoriasRoute: AuthenticatedCategoriasRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFornecedoresRoute: AuthenticatedFornecedoresRoute,
+  AuthenticatedNotasRoute: AuthenticatedNotasRouteWithChildren,
+  AuthenticatedObrasRoute: AuthenticatedObrasRouteWithChildren,
+  AuthenticatedConfiguracoesEquipeRoute: AuthenticatedConfiguracoesEquipeRoute,
+  AuthenticatedConfiguracoesWhatsappRoute:
+    AuthenticatedConfiguracoesWhatsappRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
