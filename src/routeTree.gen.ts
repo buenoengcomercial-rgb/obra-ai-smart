@@ -17,6 +17,7 @@ import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedFornecedoresRouteImport } from './routes/_authenticated/fornecedores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCategoriasRouteImport } from './routes/_authenticated/categorias'
+import { Route as AuthenticatedNotasIndexRouteImport } from './routes/_authenticated/notas.index'
 import { Route as AuthenticatedObrasNovaRouteImport } from './routes/_authenticated/obras.nova'
 import { Route as AuthenticatedObrasIdRouteImport } from './routes/_authenticated/obras.$id'
 import { Route as AuthenticatedNotasUploadRouteImport } from './routes/_authenticated/notas.upload'
@@ -63,6 +64,11 @@ const AuthenticatedCategoriasRoute = AuthenticatedCategoriasRouteImport.update({
   id: '/categorias',
   path: '/categorias',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedNotasIndexRoute = AuthenticatedNotasIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedNotasRoute,
 } as any)
 const AuthenticatedObrasNovaRoute = AuthenticatedObrasNovaRouteImport.update({
   id: '/nova',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/notas/upload': typeof AuthenticatedNotasUploadRoute
   '/obras/$id': typeof AuthenticatedObrasIdRoute
   '/obras/nova': typeof AuthenticatedObrasNovaRoute
+  '/notas/': typeof AuthenticatedNotasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -119,7 +126,6 @@ export interface FileRoutesByTo {
   '/categorias': typeof AuthenticatedCategoriasRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fornecedores': typeof AuthenticatedFornecedoresRoute
-  '/notas': typeof AuthenticatedNotasRouteWithChildren
   '/obras': typeof AuthenticatedObrasRouteWithChildren
   '/configuracoes/equipe': typeof AuthenticatedConfiguracoesEquipeRoute
   '/configuracoes/whatsapp': typeof AuthenticatedConfiguracoesWhatsappRoute
@@ -127,6 +133,7 @@ export interface FileRoutesByTo {
   '/notas/upload': typeof AuthenticatedNotasUploadRoute
   '/obras/$id': typeof AuthenticatedObrasIdRoute
   '/obras/nova': typeof AuthenticatedObrasNovaRoute
+  '/notas': typeof AuthenticatedNotasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -144,6 +151,7 @@ export interface FileRoutesById {
   '/_authenticated/notas/upload': typeof AuthenticatedNotasUploadRoute
   '/_authenticated/obras/$id': typeof AuthenticatedObrasIdRoute
   '/_authenticated/obras/nova': typeof AuthenticatedObrasNovaRoute
+  '/_authenticated/notas/': typeof AuthenticatedNotasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -161,6 +169,7 @@ export interface FileRouteTypes {
     | '/notas/upload'
     | '/obras/$id'
     | '/obras/nova'
+    | '/notas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -168,7 +177,6 @@ export interface FileRouteTypes {
     | '/categorias'
     | '/dashboard'
     | '/fornecedores'
-    | '/notas'
     | '/obras'
     | '/configuracoes/equipe'
     | '/configuracoes/whatsapp'
@@ -176,6 +184,7 @@ export interface FileRouteTypes {
     | '/notas/upload'
     | '/obras/$id'
     | '/obras/nova'
+    | '/notas'
   id:
     | '__root__'
     | '/'
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notas/upload'
     | '/_authenticated/obras/$id'
     | '/_authenticated/obras/nova'
+    | '/_authenticated/notas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -258,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCategoriasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notas/': {
+      id: '/_authenticated/notas/'
+      path: '/'
+      fullPath: '/notas/'
+      preLoaderRoute: typeof AuthenticatedNotasIndexRouteImport
+      parentRoute: typeof AuthenticatedNotasRoute
+    }
     '/_authenticated/obras/nova': {
       id: '/_authenticated/obras/nova'
       path: '/nova'
@@ -306,11 +323,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedNotasRouteChildren {
   AuthenticatedNotasIdRoute: typeof AuthenticatedNotasIdRoute
   AuthenticatedNotasUploadRoute: typeof AuthenticatedNotasUploadRoute
+  AuthenticatedNotasIndexRoute: typeof AuthenticatedNotasIndexRoute
 }
 
 const AuthenticatedNotasRouteChildren: AuthenticatedNotasRouteChildren = {
   AuthenticatedNotasIdRoute: AuthenticatedNotasIdRoute,
   AuthenticatedNotasUploadRoute: AuthenticatedNotasUploadRoute,
+  AuthenticatedNotasIndexRoute: AuthenticatedNotasIndexRoute,
 }
 
 const AuthenticatedNotasRouteWithChildren =
