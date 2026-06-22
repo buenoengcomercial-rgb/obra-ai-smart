@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentEmpresa } from "@/lib/empresa";
@@ -9,8 +9,13 @@ import { brl, dateBR } from "@/lib/format";
 import { Plus, HardHat } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/obras")({
-  component: ObrasList,
+  component: ObrasRoute,
 });
+
+function ObrasRoute() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  return pathname === "/obras" ? <ObrasList /> : <Outlet />;
+}
 
 const statusBadge: Record<string, string> = {
   planejada: "bg-secondary text-secondary-foreground",
