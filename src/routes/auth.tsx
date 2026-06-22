@@ -23,9 +23,22 @@ function AuthPage() {
   const [nome, setNome] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard", replace: true });
-    });
+    let active = true;
+
+    const redirectAuthenticatedUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (!active || error || !data.user) return;
+        await navigate({ to: "/dashboard", replace: true });
+      } catch (error) {
+        console.error("Não foi possível verificar a sessão atual.", error);
+      }
+    };
+
+    void redirectAuthenticatedUser();
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const signIn = async () => {
