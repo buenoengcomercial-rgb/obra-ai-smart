@@ -9,6 +9,7 @@ import { brl, dateBR } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Upload } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 
 export const Route = createFileRoute("/_authenticated/notas")({
   component: NotasInbox,
@@ -90,7 +91,13 @@ function NotasInbox() {
                       </tr>
                     ))}
                     {(data ?? []).filter((n) => n.status === t).length === 0 && (
-                      <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">Nada por aqui.</td></tr>
+                      <tr><td colSpan={7} className="p-6">
+                        <EmptyState
+                          title="Nenhuma nota nessa caixa"
+                          description="Envie a foto de uma nota fiscal pelo painel ou pelo WhatsApp. A IA extrai os itens e deixa pronto para conferência."
+                          action={<Button onClick={() => navigate({ to: "/notas/upload" })}><Upload className="mr-2 h-4 w-4" /> Enviar primeira nota</Button>}
+                        />
+                      </td></tr>
                     )}
                   </tbody>
                 </table>

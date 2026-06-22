@@ -10,8 +10,8 @@ import {
   MessageCircle,
   Settings2,
   LogOut,
-  HardHat as Logo,
 } from "lucide-react";
+import { BrandLockup } from "@/components/Brand";
 import {
   Sidebar,
   SidebarContent,
@@ -67,16 +67,8 @@ function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--color-accent)] text-[var(--color-accent-foreground)]">
-            <Logo className="h-5 w-5" />
-          </div>
-          {!collapsed && (
-            <div className="leading-tight">
-              <div className="text-sm font-semibold text-sidebar-foreground">Gestor de Obras</div>
-              <div className="text-[10px] uppercase tracking-wider text-sidebar-foreground/60">canteiro inteligente</div>
-            </div>
-          )}
+        <div className="px-2 py-3">
+          <BrandLockup collapsed={collapsed} />
         </div>
       </SidebarHeader>
 
