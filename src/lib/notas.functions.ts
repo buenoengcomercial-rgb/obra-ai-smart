@@ -16,6 +16,7 @@ const ItemSchema = z.object({
   confianca: z.number().min(0).max(1).optional(),
 });
 const NotaSchema = z.object({
+  chave_acesso: z.string().nullable().optional(),
   fornecedor_nome: z.string().nullable().optional(),
   fornecedor_cnpj_cpf: z.string().nullable().optional(),
   numero: z.string().nullable().optional(),
@@ -29,6 +30,7 @@ const NotaSchema = z.object({
 const SYSTEM_PROMPT = `Você é um assistente especialista em ler notas fiscais brasileiras (NF-e, NFC-e, cupons fiscais, recibos) a partir de imagens ou PDFs.
 Extraia EXCLUSIVAMENTE em JSON válido no formato:
 {
+  "chave_acesso": string|null,           // chave de acesso da NF-e com 44 dígitos, quando existir
   "fornecedor_nome": string|null,
   "fornecedor_cnpj_cpf": string|null,   // apenas dígitos, com ou sem máscara
   "numero": string|null,
@@ -52,8 +54,26 @@ Regras:
 - Valores monetários como número decimal em reais (use ponto). Nunca inclua "R$".
 - Se um campo não estiver legível, use null (ou 0 para numéricos quando fizer sentido).
 - Não invente fornecedor, CNPJ ou itens que não aparecem na imagem.
+- Para chave_acesso, retorne somente os 44 dígitos. Se não estiver legível, use null.
 - A soma dos itens deve, idealmente, bater com valor_total - desconto.
 Responda APENAS com o JSON, sem comentários nem markdown.`;
+
+function buildDedupKey(parsed: z.infer<typeof NotaSchema>): string | null {
+  const supplier = (parsed.fornecedor_cnpj_cpf ?? parsed.fornecedor_nome ?? "").trim();
+  const invoiceNumber = (parsed.numero ?? "").trim();
+
+  // Mantém compatibilidade com as notas que já foram processadas.
+  if (supplier && invoiceNumber) {
+    return `${supplier}|${invoiceNumber}|${parsed.data_emissao ?? ""}|${parsed.valor_total ?? 0}`;
+  }
+
+  // A chave de acesso é uma identidade segura mesmo quando outros campos estão ilegíveis.
+  const accessKey = (parsed.chave_acesso ?? "").replace(/\D/g, "");
+  if (accessKey.length === 44) return `chave:${accessKey}`;
+
+  // Nunca deduplica respostas vazias ou incompletas: elas devem seguir para conferência.
+  return null;
+}
 
 export const extrairNotaFn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -88,7 +108,10 @@ export const extrairNotaFn = createServerFn({ method: "POST" })
     const dataUrl = `data:${anexo.mime};base64,${b64}`;
 
     const userContent: Array<Record<string, unknown>> = [
-      { type: "text", text: "Extraia os dados desta nota fiscal e retorne o JSON conforme o schema." },
+      {
+        type: "text",
+        text: "Extraia os dados desta nota fiscal e retorne o JSON conforme o schema.",
+      },
     ];
     if (isPdf) {
       userContent.push({
@@ -117,8 +140,8 @@ export const extrairNotaFn = createServerFn({ method: "POST" })
       throw new Error(`Não foi possível interpretar a resposta da IA: ${(e as Error).message}`);
     }
 
-    // Hash de deduplicação
-    const dedup = `${parsed.fornecedor_cnpj_cpf ?? parsed.fornecedor_nome ?? ""}|${parsed.numero ?? ""}|${parsed.data_emissao ?? ""}|${parsed.valor_total ?? 0}`;
+    // Identificador de deduplicação somente quando a leitura tem identidade confiável.
+    const dedup = buildDedupKey(parsed);
 
     // Salva extração bruta
     await supabase.from("ia_extracoes").insert({
@@ -145,7 +168,13 @@ export const extrairNotaFn = createServerFn({ method: "POST" })
     if (uErr) {
       // Provavelmente colisão de hash_dedup (índice único parcial)
       if (uErr.message.includes("uq_nota_dedup")) {
-        await supabase.from("notas_fiscais").update({ status: "rejeitada", observacao: "Possível duplicata detectada automaticamente." }).eq("id", data.notaId);
+        await supabase
+          .from("notas_fiscais")
+          .update({
+            status: "rejeitada",
+            observacao: "Possível duplicata detectada automaticamente.",
+          })
+          .eq("id", data.notaId);
         throw new Error("Esta nota já foi lançada anteriormente (duplicidade detectada).");
       }
       throw uErr;
