@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, ClipboardCopy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ClipboardCopy, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrentEmpresa } from "@/lib/empresa";
 
 const PUBLIC_APP_URL = "https://obra-ai-smart.lovable.app";
 
@@ -11,11 +12,20 @@ export const Route = createFileRoute("/_authenticated/configuracoes/whatsapp")({
 });
 
 function WhatsAppConfig() {
+  const empresa = useCurrentEmpresa();
   const webhookUrl = `${PUBLIC_APP_URL}/api/public/whatsapp/webhook`;
-  const copy = () => {
+
+  const copyWebhook = () => {
     navigator.clipboard.writeText(webhookUrl);
     toast.success("URL copiada!");
   };
+
+  const copyEmpresaId = () => {
+    if (!empresa.data?.id) return;
+    navigator.clipboard.writeText(empresa.data.id);
+    toast.success("ID da empresa copiado!");
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div>
@@ -24,13 +34,14 @@ function WhatsAppConfig() {
           Receba notas direto do canteiro pelo WhatsApp.
         </p>
       </div>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageCircle className="h-5 w-5" /> Como ligar a API oficial da Meta
           </CardTitle>
           <CardDescription>
-            Etapa única — você fornece os tokens, a gente cuida do resto.
+            Configure o webhook na Meta e salve os secrets no Lovable.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -46,30 +57,53 @@ function WhatsAppConfig() {
               Anote o <strong>Phone Number ID</strong> do número WABA.
             </li>
             <li>
-              Defina um <strong>Verify Token</strong> (qualquer string que só você sabe).
+              Defina o <strong>Verify Token</strong> como <code>obra_certa_whatsapp_2026</code>.
             </li>
             <li>
               Configure o webhook abaixo em{" "}
               <em>
                 Casos de uso → Conectar-se com clientes pelo WhatsApp → Personalizar → Configuração
-              </em>
-              .
+              </em>{" "}
+              e assine o campo <strong>messages</strong>.
             </li>
           </ol>
+
           <div className="rounded-md border border-border bg-secondary p-3 font-mono text-xs">
             <div className="flex items-center justify-between gap-2">
               <span className="break-all">{webhookUrl}</span>
-              <Button size="sm" variant="outline" onClick={copy}>
+              <Button size="sm" variant="outline" onClick={copyWebhook}>
                 <ClipboardCopy className="h-3 w-3" />
               </Button>
             </div>
           </div>
+
           <div className="rounded-md border border-dashed p-3 text-muted-foreground">
-            Use o token de verificação <code>obra_certa_whatsapp_2026</code> na Meta. Quando você
-            tiver os tokens em mãos, peça aqui no chat para{" "}
-            <strong>ativar a integração WhatsApp</strong>. Vamos pedir e armazenar com segurança:{" "}
-            <code>WHATSAPP_ACCESS_TOKEN</code>, <code>WHATSAPP_PHONE_NUMBER_ID</code> e{" "}
-            <code>META_APP_SECRET</code>.
+            Secrets necessários no Lovable: <code>WHATSAPP_ACCESS_TOKEN</code>,{" "}
+            <code>WHATSAPP_PHONE_NUMBER_ID</code>, <code>WHATSAPP_VERIFY_TOKEN</code>,{" "}
+            <code>META_APP_SECRET</code> e <code>WHATSAPP_EMPRESA_ID</code>.
+          </div>
+
+          <div className="rounded-md border border-border p-3">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Empresa para receber as notas do WhatsApp
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2 rounded-md bg-muted p-2 font-mono text-xs">
+              <span className="break-all">
+                {empresa.data?.id ?? "Crie ou selecione uma empresa para exibir o ID."}
+              </span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={copyEmpresaId}
+                disabled={!empresa.data?.id}
+              >
+                <ClipboardCopy className="h-3 w-3" />
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Cadastre esse valor como secret <code>WHATSAPP_EMPRESA_ID</code>. Assim o webhook sabe
+              em qual empresa lançar as notas recebidas pelo WhatsApp.
+            </p>
           </div>
         </CardContent>
       </Card>
