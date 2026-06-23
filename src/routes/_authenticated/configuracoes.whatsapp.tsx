@@ -4,13 +4,14 @@ import { MessageCircle, ClipboardCopy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+const PUBLIC_APP_URL = "https://obra-ai-smart.lovable.app";
+
 export const Route = createFileRoute("/_authenticated/configuracoes/whatsapp")({
   component: WhatsAppConfig,
 });
 
 function WhatsAppConfig() {
-  const webhookUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/api/public/whatsapp/webhook` : "";
+  const webhookUrl = `${PUBLIC_APP_URL}/api/public/whatsapp/webhook`;
   const copy = () => {
     navigator.clipboard.writeText(webhookUrl);
     toast.success("URL copiada!");
