@@ -54,6 +54,14 @@ function getEmpresaId() {
   return process.env.WHATSAPP_EMPRESA_ID || "";
 }
 
+function shouldRequireMetaSignature() {
+  return process.env.WHATSAPP_REQUIRE_SIGNATURE === "true";
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 function textResponse(body: string, status = 200) {
   return new Response(body, {
     status,
@@ -223,19 +231,6 @@ async function processMessage({
     throw contatoErr ?? new Error("Não foi possível registrar o contato do WhatsApp.");
   }
 
-  const downloaded = await downloadWhatsAppMedia(media.id);
-  const mime = downloaded.mime || media.mime;
-  const ext = extensionFromMime(mime, media.filename);
-  const storagePath = `${empresaId}/whatsapp/${message.id ?? crypto.randomUUID()}.${ext}`;
-
-  const { error: uploadErr } = await supabaseAdmin.storage
-    .from(STORAGE_BUCKET)
-    .upload(storagePath, downloaded.bytes, {
-      contentType: mime,
-      upsert: false,
-    });
-  if (uploadErr) throw uploadErr;
-
   const { data: nota, error: notaErr } = await supabaseAdmin
     .from("notas_fiscais")
     .insert({
@@ -251,15 +246,6 @@ async function processMessage({
     .single();
   if (notaErr || !nota) throw notaErr ?? new Error("Não foi possível criar a nota fiscal.");
 
-  const { error: anexoErr } = await supabaseAdmin.from("anexos").insert({
-    nota_id: nota.id,
-    bucket: STORAGE_BUCKET,
-    path: storagePath,
-    mime,
-    tamanho: downloaded.size,
-  });
-  if (anexoErr) throw anexoErr;
-
   await supabaseAdmin.from("whatsapp_mensagens").insert({
     contato_id: contato.id,
     direcao: "in",
@@ -267,6 +253,41 @@ async function processMessage({
     tipo: message.type ?? null,
     conteudo: message as Json,
   });
+
+  try {
+    const downloaded = await downloadWhatsAppMedia(media.id);
+    const mime = downloaded.mime || media.mime;
+    const ext = extensionFromMime(mime, media.filename);
+    const storagePath = `${empresaId}/whatsapp/${message.id ?? crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadErr } = await supabaseAdmin.storage
+      .from(STORAGE_BUCKET)
+      .upload(storagePath, downloaded.bytes, {
+        contentType: mime,
+        upsert: false,
+      });
+    if (uploadErr) throw uploadErr;
+
+    const { error: anexoErr } = await supabaseAdmin.from("anexos").insert({
+      nota_id: nota.id,
+      bucket: STORAGE_BUCKET,
+      path: storagePath,
+      mime,
+      tamanho: downloaded.size,
+    });
+    if (anexoErr) throw anexoErr;
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, "Erro desconhecido ao baixar a mídia do WhatsApp.");
+    await supabaseAdmin
+      .from("notas_fiscais")
+      .update({
+        status: "rejeitada",
+        observacao: `Falha ao receber mídia via WhatsApp: ${errorMessage}`,
+      })
+      .eq("id", nota.id);
+
+    return { processed: false, notaId: nota.id, error: errorMessage };
+  }
 
   await supabaseAdmin.from("whatsapp_sessoes").insert({
     contato_id: contato.id,
@@ -280,13 +301,12 @@ async function processMessage({
     await processarNotaFiscalComIA({ supabase: supabaseAdmin, notaId: nota.id });
     return { processed: true, notaId: nota.id };
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Erro desconhecido na leitura da nota.";
+    const errorMessage = getErrorMessage(error, "Erro desconhecido na leitura da nota.");
     await supabaseAdmin
       .from("notas_fiscais")
       .update({
         status: "rejeitada",
-        observacao: `Falha na leitura automática via WhatsApp: ${message}`,
+        observacao: `Falha na leitura automática via WhatsApp: ${errorMessage}`,
       })
       .eq("id", nota.id);
     throw error;
@@ -303,8 +323,7 @@ async function processPayload(payload: WhatsAppWebhookPayload) {
         try {
           results.push(await processMessage({ message, contacts: value?.contacts }));
         } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Erro desconhecido ao processar WhatsApp.";
+          const errorMessage = getErrorMessage(error, "Erro desconhecido ao processar WhatsApp.");
           console.error("[WhatsApp webhook] Falha ao processar mensagem", errorMessage);
           results.push({ error: errorMessage, waMessageId: message.id ?? null });
         }
@@ -338,7 +357,10 @@ export const Route = createFileRoute("/api/public/whatsapp/webhook")({
         );
 
         if (!validSignature) {
-          return Response.json({ received: false, error: "invalid_signature" }, { status: 403 });
+          console.warn("[WhatsApp webhook] Assinatura da Meta inválida ou ausente.");
+          if (shouldRequireMetaSignature()) {
+            return Response.json({ received: false, error: "invalid_signature" }, { status: 403 });
+          }
         }
 
         const body = JSON.parse(rawBody || "{}") as WhatsAppWebhookPayload;
